@@ -6,3 +6,13 @@ pub struct AppState {
     pub visit_count: Mutex<i32>,
     pub courses: Mutex<Vec<Course>>,
 }
+
+impl AppState {
+    pub fn new(response: &str) -> Self {
+        AppState {
+            health_check_response: String::from(response),
+            visit_count: Mutex::new(0),
+            courses: Mutex::new(vec![]),
+        }
+    }
+}
