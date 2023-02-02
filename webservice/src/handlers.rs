@@ -34,6 +34,26 @@ pub async fn new_course_handler(
     HttpResponse::Ok().json(&new_course)
 }
 
+pub async fn get_courses_of_teacher(
+    state: web::Data<AppState>,
+    params: web::Path<usize>,
+) -> HttpResponse {
+    let teacher_id = params.into_inner();
+    let courses = state
+        .courses
+        .lock()
+        .unwrap()
+        .clone()
+        .into_iter()
+        .filter(|c| c.teacher_id == teacher_id as i32)
+        .collect::<Vec<_>>();
+    if !courses.is_empty() {
+        HttpResponse::Ok().json(&courses)
+    } else {
+        HttpResponse::Ok().json("No courses found")
+    }
+}
+
 #[actix_rt::test]
 async fn post_course_test() {
     use actix_web::http::StatusCode;
@@ -50,5 +70,19 @@ async fn post_course_test() {
         courses: Mutex::new(vec![]),
     });
     let response = new_course_handler(data, course).await;
+    assert_eq!(response.status(), StatusCode::OK);
+}
+
+#[actix_rt::test]
+async fn get_all_courses_of_teacher() {
+    use actix_web::http::StatusCode;
+    use std::sync::Mutex;
+    let state = web::Data::new(AppState {
+        health_check_response: String::from("I'm healthy"),
+        visit_count: Mutex::new(0),
+        courses: Mutex::new(vec![Course::new(1, "Math".to_string())]),
+    });
+    let teacher_id = web::Path::from(1);
+    let response = get_courses_of_teacher(state, teacher_id).await;
     assert_eq!(response.status(), StatusCode::OK);
 }
