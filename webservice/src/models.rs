@@ -10,6 +10,17 @@ pub struct Course {
     pub time: Option<NaiveDateTime>,
 }
 
+impl Course {
+    pub fn new(teacher_id: i32, name: String) -> Self {
+        Course {
+            id: None,
+            teacher_id,
+            name,
+            time: None,
+        }
+    }
+}
+
 impl From<web::Json<Course>> for Course {
     fn from(course: web::Json<Course>) -> Self {
         Course {

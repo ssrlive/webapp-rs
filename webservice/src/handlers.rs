@@ -16,7 +16,7 @@ pub async fn new_course_handler(
     course: web::Json<Course>,
 ) -> HttpResponse {
     let count = data
-        .course
+        .courses
         .lock()
         .unwrap()
         .clone()
@@ -30,7 +30,7 @@ pub async fn new_course_handler(
         name: course.name.clone(),
         time: Some(Utc::now().naive_utc()),
     };
-    data.course.lock().unwrap().push(new_course.clone());
+    data.courses.lock().unwrap().push(new_course.clone());
     HttpResponse::Ok().json(&new_course)
 }
 
@@ -47,7 +47,7 @@ async fn post_course_test() {
     let data = web::Data::new(AppState {
         health_check_response: String::from("I'm healthy"),
         visit_count: Mutex::new(0),
-        course: Mutex::new(vec![]),
+        courses: Mutex::new(vec![]),
     });
     let response = new_course_handler(data, course).await;
     assert_eq!(response.status(), StatusCode::OK);
