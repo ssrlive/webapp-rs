@@ -54,35 +54,33 @@ pub async fn get_courses_of_teacher(
     }
 }
 
-#[actix_rt::test]
-async fn post_course_test() {
+#[cfg(test)]
+mod tests {
+    use super::*;
     use actix_web::http::StatusCode;
     use std::sync::Mutex;
-    let course = web::Json(Course {
-        id: None,
-        teacher_id: 1,
-        name: "Math".to_string(),
-        time: None,
-    });
-    let data = web::Data::new(AppState {
-        health_check_response: String::from("I'm healthy"),
-        visit_count: Mutex::new(0),
-        courses: Mutex::new(vec![]),
-    });
-    let response = new_course_handler(data, course).await;
-    assert_eq!(response.status(), StatusCode::OK);
-}
 
-#[actix_rt::test]
-async fn get_all_courses_of_teacher() {
-    use actix_web::http::StatusCode;
-    use std::sync::Mutex;
-    let state = web::Data::new(AppState {
-        health_check_response: String::from("I'm healthy"),
-        visit_count: Mutex::new(0),
-        courses: Mutex::new(vec![Course::new(1, "Math".to_string())]),
-    });
-    let teacher_id = web::Path::from(1);
-    let response = get_courses_of_teacher(state, teacher_id).await;
-    assert_eq!(response.status(), StatusCode::OK);
+    #[actix_rt::test]
+    async fn post_course_test() {
+        let course = web::Json(Course::new(1, "Math".to_string()));
+        let data = web::Data::new(AppState {
+            health_check_response: String::from("I'm healthy"),
+            visit_count: Mutex::new(0),
+            courses: Mutex::new(vec![]),
+        });
+        let response = new_course_handler(data, course).await;
+        assert_eq!(response.status(), StatusCode::OK);
+    }
+
+    #[actix_rt::test]
+    async fn get_all_courses_of_teacher() {
+        let state = web::Data::new(AppState {
+            health_check_response: String::from("I'm healthy"),
+            visit_count: Mutex::new(0),
+            courses: Mutex::new(vec![Course::new(1, "Math".to_string())]),
+        });
+        let teacher_id = web::Path::from(1);
+        let response = get_courses_of_teacher(state, teacher_id).await;
+        assert_eq!(response.status(), StatusCode::OK);
+    }
 }
