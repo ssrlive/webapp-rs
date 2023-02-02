@@ -54,6 +54,26 @@ pub async fn get_courses_of_teacher(
     }
 }
 
+pub async fn get_course_detail(
+    state: web::Data<AppState>,
+    params: web::Path<(usize, usize)>,
+) -> HttpResponse {
+    let (teacher_id, course_id) = params.into_inner();
+    let course = state
+        .courses
+        .lock()
+        .unwrap()
+        .clone()
+        .into_iter()
+        .filter(|c| c.teacher_id == teacher_id && c.id == Some(course_id))
+        .collect::<Vec<_>>();
+    if !course.is_empty() {
+        HttpResponse::Ok().json(&course)
+    } else {
+        HttpResponse::Ok().json("No course found")
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -81,6 +101,18 @@ mod tests {
         });
         let teacher_id = web::Path::from(1);
         let response = get_courses_of_teacher(state, teacher_id).await;
+        assert_eq!(response.status(), StatusCode::OK);
+    }
+
+    #[actix_rt::test]
+    async fn get_course_detail_test() {
+        let state = web::Data::new(AppState {
+            health_check_response: String::from("I'm healthy"),
+            visit_count: Mutex::new(0),
+            courses: Mutex::new(vec![Course::new(1, "Math".to_string())]),
+        });
+        let params = web::Path::from((1, 1));
+        let response = get_course_detail(state, params).await;
         assert_eq!(response.status(), StatusCode::OK);
     }
 }
