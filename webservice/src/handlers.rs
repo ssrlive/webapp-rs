@@ -25,7 +25,7 @@ pub async fn new_course_handler(
         .collect::<Vec<_>>()
         .len();
     let new_course = Course {
-        id: Some(count as i32 + 1),
+        id: Some(count + 1),
         teacher_id: course.teacher_id,
         name: course.name.clone(),
         time: Some(Utc::now().naive_utc()),
@@ -45,7 +45,7 @@ pub async fn get_courses_of_teacher(
         .unwrap()
         .clone()
         .into_iter()
-        .filter(|c| c.teacher_id == teacher_id as i32)
+        .filter(|c| c.teacher_id == teacher_id)
         .collect::<Vec<_>>();
     if !courses.is_empty() {
         HttpResponse::Ok().json(&courses)

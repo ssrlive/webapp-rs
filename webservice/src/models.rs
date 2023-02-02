@@ -4,14 +4,14 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Course {
-    pub id: Option<i32>,
-    pub teacher_id: i32,
+    pub id: Option<usize>,
+    pub teacher_id: usize,
     pub name: String,
     pub time: Option<NaiveDateTime>,
 }
 
 impl Course {
-    pub fn new(teacher_id: i32, name: String) -> Self {
+    pub fn new(teacher_id: usize, name: String) -> Self {
         Course {
             id: None,
             teacher_id,
