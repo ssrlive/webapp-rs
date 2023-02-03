@@ -1,4 +1,4 @@
-pub mod db_access;
+pub mod dbaccess;
 pub mod errors;
 pub mod handlers;
 pub mod models;

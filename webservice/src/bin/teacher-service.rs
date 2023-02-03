@@ -1,7 +1,7 @@
 use actix_web::{web, App, HttpServer};
 use std::io;
 
-use webservice::db_access::init_db;
+use webservice::dbaccess::course::init_db;
 use webservice::routers::*;
 use webservice::state::AppState;
 

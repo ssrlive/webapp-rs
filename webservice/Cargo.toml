@@ -16,7 +16,4 @@ sqlx = { version = "0.6.2", features = ["postgres", "runtime-actix-rustls", "chr
 tokio = { version = "1.25.0", features = ["full"] }
 
 [[bin]]
-name = "server1"
-
-[[bin]]
 name = "teacher-service"

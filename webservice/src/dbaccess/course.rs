@@ -1,5 +1,5 @@
 use crate::errors::{Result, ServiceError};
-use crate::models::Course;
+use crate::models::course::Course;
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 use tokio::fs;
 
