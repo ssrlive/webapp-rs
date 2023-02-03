@@ -1,6 +1,6 @@
-use crate::db_access::*;
 use crate::models::Course;
 use crate::state::AppState;
+use crate::{db_access::*, errors::Result};
 use actix_web::{web, HttpResponse};
 
 pub async fn health_check_handler(state: web::Data<AppState>) -> HttpResponse {
@@ -14,33 +14,31 @@ pub async fn health_check_handler(state: web::Data<AppState>) -> HttpResponse {
 pub async fn new_course_handler(
     state: web::Data<AppState>,
     course: web::Json<Course>,
-) -> HttpResponse {
-    let courses = post_course_db(&state.db, &course).await.unwrap();
-    HttpResponse::Ok().json(&courses)
+) -> Result<HttpResponse> {
+    let courses = post_course_db(&state.db, &course).await?;
+    Ok(HttpResponse::Ok().json(&courses))
 }
 
 pub async fn get_courses_of_teacher(
     state: web::Data<AppState>,
     params: web::Path<usize>,
-) -> HttpResponse {
+) -> Result<HttpResponse> {
     let teacher_id = i64::try_from(params.into_inner()).unwrap();
-    let courses = get_courses_of_teacher_db(&state.db, teacher_id)
+    get_courses_of_teacher_db(&state.db, teacher_id)
         .await
-        .unwrap();
-    HttpResponse::Ok().json(&courses)
+        .map(|courses| HttpResponse::Ok().json(&courses))
 }
 
 pub async fn get_course_detail(
     state: web::Data<AppState>,
     params: web::Path<(usize, usize)>,
-) -> HttpResponse {
+) -> Result<HttpResponse> {
     let (teacher_id, course_id) = params.into_inner();
     let teacher_id = i64::try_from(teacher_id).unwrap();
     let course_id = i64::try_from(course_id).unwrap();
-    let course = get_course_details_db(&state.db, teacher_id, course_id)
+    get_course_details_db(&state.db, teacher_id, course_id)
         .await
-        .unwrap();
-    HttpResponse::Ok().json(&course)
+        .map(|course| HttpResponse::Ok().json(&course))
 }
 
 #[cfg(test)]
@@ -57,7 +55,7 @@ mod tests {
         let course = web::Json(Course::new(1, "Math".to_string()));
         let state = AppState::new("I'm healthy", db_pool);
         let state = web::Data::new(state);
-        let response = new_course_handler(state, course).await;
+        let response = new_course_handler(state, course).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
     }
 
@@ -69,7 +67,7 @@ mod tests {
         let state = AppState::new("I'm healthy", db_pool);
         let state = web::Data::new(state);
         let teacher_id = web::Path::from(1);
-        let response = get_courses_of_teacher(state, teacher_id).await;
+        let response = get_courses_of_teacher(state, teacher_id).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
     }
 
@@ -81,7 +79,7 @@ mod tests {
         let state = AppState::new("I'm healthy", db_pool);
         let state = web::Data::new(state);
         let params = web::Path::from((1, 1));
-        let response = get_course_detail(state, params).await;
+        let response = get_course_detail(state, params).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
     }
 }
