@@ -12,10 +12,12 @@ pub struct Course {
 
 impl Course {
     pub fn new(teacher_id: i64, name: String) -> Self {
-        let mut course = Course::default();
-        course.teacher_id = teacher_id;
-        course.name = name;
-        course
+        Course {
+            id: None,
+            teacher_id,
+            name,
+            time: None,
+        }
     }
 
     pub fn set_id(&mut self, id: i64) {
