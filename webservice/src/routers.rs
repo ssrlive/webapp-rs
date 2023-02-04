@@ -13,6 +13,14 @@ pub fn course_routes(cfg: &mut web::ServiceConfig) {
             .route(
                 "/{teacher_id}/{course_id}",
                 web::get().to(get_course_detail),
+            )
+            .route(
+                "/{teacher_id}/{course_id}",
+                web::put().to(update_course_handler),
+            )
+            .route(
+                "/{teacher_id}/{course_id}",
+                web::delete().to(delete_course_handler),
             ),
     );
 }

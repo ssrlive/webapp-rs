@@ -81,3 +81,38 @@ impl TryFrom<web::Json<CreateCourse>> for CreateCourse {
         Ok(json.into_inner())
     }
 }
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct UpdateCourse {
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub format: Option<String>,
+    pub structure: Option<String>,
+    pub duration: Option<String>,
+    pub price: Option<i32>,
+    pub language: Option<String>,
+    pub level: Option<String>,
+}
+
+impl From<Course> for UpdateCourse {
+    fn from(course: Course) -> Self {
+        UpdateCourse {
+            name: Some(course.name),
+            description: course.description,
+            format: course.format,
+            structure: course.structure,
+            duration: course.duration,
+            price: course.price,
+            language: course.language,
+            level: course.level,
+        }
+    }
+}
+
+impl TryFrom<web::Json<UpdateCourse>> for UpdateCourse {
+    type Error = ServiceError;
+
+    fn try_from(json: web::Json<UpdateCourse>) -> Result<Self, Self::Error> {
+        Ok(json.into_inner())
+    }
+}
