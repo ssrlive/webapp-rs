@@ -42,8 +42,8 @@ pub async fn delete_teacher_handler(
     teacher_id: web::Path<i64>,
 ) -> Result<HttpResponse> {
     let teacher_id = teacher_id.into_inner();
-    delete_teacher_db(&state.db, teacher_id).await?;
-    Ok(HttpResponse::Ok().finish())
+    let teacher = delete_teacher_db(&state.db, teacher_id).await?;
+    Ok(HttpResponse::Ok().json(teacher))
 }
 
 #[cfg(test)]

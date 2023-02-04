@@ -1,4 +1,4 @@
-use super::course::Db;
+use crate::dbaccess::dbinit::Db;
 use crate::errors::{Result, ServiceError};
 use crate::models::teacher::{CreateTeacher, Teacher, UpdateTeacher};
 
