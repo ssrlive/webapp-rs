@@ -1,11 +1,11 @@
-use crate::models::course::Course;
+use crate::models::course::CreateCourse;
 use crate::state::AppState;
 use crate::{dbaccess::course::*, errors::Result};
 use actix_web::{web, HttpResponse};
 
 pub async fn new_course_handler(
     state: web::Data<AppState>,
-    course: web::Json<Course>,
+    course: web::Json<CreateCourse>,
 ) -> Result<HttpResponse> {
     let courses = post_course_db(&state.db, &course).await?;
     Ok(HttpResponse::Ok().json(&courses))
@@ -36,6 +36,7 @@ pub async fn get_course_detail(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::models::course::Course;
     use actix_web::http::StatusCode;
     use sqlx::postgres::PgPoolOptions;
 
@@ -44,7 +45,7 @@ mod tests {
         dotenv::dotenv().ok();
         let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
         let db_pool = PgPoolOptions::new().connect(&database_url).await.unwrap();
-        let course = web::Json(Course::new(1, "Math".to_string()));
+        let course = web::Json(Course::new(1, "Math").into());
         let state = AppState::new("I'm healthy", db_pool);
         let state = web::Data::new(state);
         let response = new_course_handler(state, course).await.unwrap();

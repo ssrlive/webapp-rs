@@ -1,5 +1,5 @@
 use crate::errors::{Result, ServiceError};
-use crate::models::course::Course;
+use crate::models::course::{Course, CreateCourse};
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 use tokio::fs;
 
@@ -38,70 +38,53 @@ pub async fn init_db(db_url: &str) -> Result<Db> {
 }
 
 pub async fn get_courses_of_teacher_db(db: &Db, teacher_id: i64) -> Result<Vec<Course>> {
-    let rows = sqlx::query!(
+    let rows = sqlx::query_as!(
+        Course,
         r#"
-        SELECT id, teacher_id, name, time
-        FROM course
-        WHERE teacher_id = $1
+        SELECT * FROM course WHERE teacher_id = $1
         "#,
         teacher_id
     )
     .fetch_all(db)
     .await?;
-
-    let v = rows
-        .iter()
-        .map(|row| {
-            let mut course = Course::new(row.teacher_id, row.name.clone());
-            course.set_id(row.id);
-            course.set_time(row.time);
-            course
-        })
-        .collect::<Vec<_>>();
-
-    if v.is_empty() {
-        Err(ServiceError::NotFound(format!(
-            "No course found for teacher {teacher_id}"
-        )))
-    } else {
-        Ok(v)
-    }
+    Ok(rows)
 }
 
 pub async fn get_course_details_db(db: &Db, teacher_id: i64, course_id: i64) -> Result<Course> {
-    let row = sqlx::query!(
+    let row = sqlx::query_as!(
+        Course,
         r#"
-        SELECT id, teacher_id, name, time
-        FROM course
-        WHERE teacher_id = $1 AND id = $2
+        SELECT * FROM course WHERE teacher_id = $1 AND id = $2
         "#,
         teacher_id,
         course_id
     )
-    .fetch_one(db)
+    .fetch_optional(db)
     .await?;
-
-    let mut course = Course::new(row.teacher_id, row.name.clone());
-    course.set_id(row.id);
-    course.set_time(row.time);
-    Ok(course)
+    let error = format!("Course {course_id} of teacher {teacher_id} not found");
+    row.ok_or(ServiceError::NotFound(error))
 }
 
-pub async fn post_course_db(db: &Db, course: &Course) -> Result<Course> {
-    let row = sqlx::query!(
+pub async fn post_course_db(db: &Db, course: &CreateCourse) -> Result<Course> {
+    let row = sqlx::query_as!(
+        Course,
         r#"
-        INSERT INTO course (teacher_id, name)
-        VALUES ($1, $2)
-        RETURNING id, teacher_id, name, time
+        INSERT INTO course (teacher_id, name, description, format, structure, duration, price, language, level)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        RETURNING id, teacher_id, name, time, description, format, structure, duration, price, language, level
         "#,
         course.teacher_id,
-        course.name
+        course.name,
+        course.description,
+        course.format,
+        course.structure,
+        course.duration,
+        course.price,
+        course.language,
+        course.level
     )
     .fetch_one(db)
     .await?;
 
-    let mut course = Course::new(row.teacher_id, row.name.clone());
-    course.set_id(row.id);
-    course.set_time(row.time);
-    Ok(course)
+    Ok(row)
 }
