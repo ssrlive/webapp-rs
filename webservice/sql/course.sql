@@ -1,4 +1,4 @@
-create table if not exists courses (
+create table if not exists course (
     id bigserial NOT NULL primary key,
     teacher_id bigint not null,
     name varchar(150) not null,

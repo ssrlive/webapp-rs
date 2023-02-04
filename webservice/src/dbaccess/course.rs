@@ -3,14 +3,14 @@ use crate::models::course::Course;
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 use tokio::fs;
 
-const PG_MAX_CONN: u32 = 5;
-const SQL_FILE: &str = "sql/courses.sql";
+const PG_MAX_CONN: usize = 5;
+const SQL_FILE: &str = "sql/course.sql";
 
 pub type Db = Pool<Postgres>;
 
-async fn new_db_pool(db_url: &str, max_conn: u32) -> Result<Db> {
+async fn new_db_pool(db_url: &str, max_conn: usize) -> Result<Db> {
     PgPoolOptions::new()
-        .max_connections(max_conn)
+        .max_connections(max_conn as u32)
         .connect(db_url)
         .await
         .map_err(ServiceError::from)
@@ -41,7 +41,7 @@ pub async fn get_courses_of_teacher_db(db: &Db, teacher_id: i64) -> Result<Vec<C
     let rows = sqlx::query!(
         r#"
         SELECT id, teacher_id, name, time
-        FROM courses
+        FROM course
         WHERE teacher_id = $1
         "#,
         teacher_id
@@ -72,7 +72,7 @@ pub async fn get_course_details_db(db: &Db, teacher_id: i64, course_id: i64) -> 
     let row = sqlx::query!(
         r#"
         SELECT id, teacher_id, name, time
-        FROM courses
+        FROM course
         WHERE teacher_id = $1 AND id = $2
         "#,
         teacher_id,
@@ -90,7 +90,7 @@ pub async fn get_course_details_db(db: &Db, teacher_id: i64, course_id: i64) -> 
 pub async fn post_course_db(db: &Db, course: &Course) -> Result<Course> {
     let row = sqlx::query!(
         r#"
-        INSERT INTO courses (teacher_id, name)
+        INSERT INTO course (teacher_id, name)
         VALUES ($1, $2)
         RETURNING id, teacher_id, name, time
         "#,
