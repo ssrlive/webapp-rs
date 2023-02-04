@@ -1,5 +1,6 @@
 use actix_web::{web, App, HttpServer};
 use std::io;
+use webservice::errors::ServiceError;
 
 use webservice::dbaccess::course::init_db;
 use webservice::routers::*;
@@ -16,8 +17,13 @@ async fn main() -> io::Result<()> {
     let app = move || {
         App::new()
             .app_data(state.clone())
+            .app_data(
+                web::JsonConfig::default()
+                    .error_handler(|e, _| ServiceError::InvalidInput(e.to_string()).into()),
+            )
             .configure(general_routes)
             .configure(course_routes)
+            .configure(teacher_routes)
     };
 
     HttpServer::new(app).bind("127.0.0.1:3000")?.run().await

@@ -9,6 +9,7 @@ pub enum ServiceError {
     DbError(String),
     ActixError(String),
     NotFound(String),
+    InvalidInput(String),
 }
 
 #[derive(Debug, Serialize)]
@@ -22,6 +23,7 @@ impl ServiceError {
             ServiceError::DbError(msg) => format!("Database error: {msg}"),
             ServiceError::ActixError(msg) => format!("Internal server error: {msg}"),
             ServiceError::NotFound(msg) => msg.to_string(),
+            ServiceError::InvalidInput(msg) => msg.to_string(),
         }
     }
 }
@@ -33,6 +35,7 @@ impl error::ResponseError for ServiceError {
                 StatusCode::INTERNAL_SERVER_ERROR
             }
             ServiceError::NotFound(_) => StatusCode::NOT_FOUND,
+            ServiceError::InvalidInput(_) => StatusCode::BAD_REQUEST,
         }
     }
 

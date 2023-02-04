@@ -62,28 +62,28 @@ pub async fn delete_course_handler(
 mod tests {
     use super::*;
     use crate::models::course::Course;
-    use actix_web::http::StatusCode;
+    use actix_web::{http::StatusCode, web::Data};
     use sqlx::postgres::PgPoolOptions;
 
-    #[actix_rt::test]
-    async fn post_course_test() {
+    async fn build_test_env() -> Data<AppState> {
         dotenv::dotenv().ok();
         let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
         let db_pool = PgPoolOptions::new().connect(&database_url).await.unwrap();
-        let course = web::Json(Course::new(1, "Math").into());
         let state = AppState::new("I'm healthy", db_pool);
-        let state = web::Data::new(state);
+        web::Data::new(state)
+    }
+
+    #[actix_rt::test]
+    async fn post_course_test() {
+        let state = build_test_env().await;
+        let course = web::Json(Course::new(1, "Math").into());
         let response = new_course_handler(state, course).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
     }
 
     #[actix_rt::test]
     async fn get_all_courses_of_teacher() {
-        dotenv::dotenv().ok();
-        let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-        let db_pool = PgPoolOptions::new().connect(&database_url).await.unwrap();
-        let state = AppState::new("I'm healthy", db_pool);
-        let state = web::Data::new(state);
+        let state = build_test_env().await;
         let teacher_id = web::Path::from(1);
         let response = get_courses_of_teacher(state, teacher_id).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
@@ -91,11 +91,7 @@ mod tests {
 
     #[actix_rt::test]
     async fn get_course_detail_test() {
-        dotenv::dotenv().ok();
-        let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-        let db_pool = PgPoolOptions::new().connect(&database_url).await.unwrap();
-        let state = AppState::new("I'm healthy", db_pool);
-        let state = web::Data::new(state);
+        let state = build_test_env().await;
         let params = web::Path::from((1, 1));
         let response = get_course_detail(state, params).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
@@ -104,11 +100,7 @@ mod tests {
     #[ignore = "perhaps the course is not exist"]
     #[actix_rt::test]
     async fn update_course_test() {
-        dotenv::dotenv().ok();
-        let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-        let db_pool = PgPoolOptions::new().connect(&database_url).await.unwrap();
-        let state = AppState::new("I'm healthy", db_pool);
-        let state = web::Data::new(state);
+        let state = build_test_env().await;
         let params = web::Path::from((1, 7));
         let course = web::Json(Course::new(1, "Chinese").into());
         let response = update_course_handler(state, params, course).await.unwrap();
@@ -118,11 +110,7 @@ mod tests {
     #[ignore = "perhaps the course is not exist"]
     #[actix_rt::test]
     async fn delete_course_test() {
-        dotenv::dotenv().ok();
-        let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-        let db_pool = PgPoolOptions::new().connect(&database_url).await.unwrap();
-        let state = AppState::new("I'm healthy", db_pool);
-        let state = web::Data::new(state);
+        let state = build_test_env().await;
         let params = web::Path::from((1, 22));
         let response = delete_course_handler(state, params).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);

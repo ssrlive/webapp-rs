@@ -11,3 +11,10 @@ create table if not exists course (
     language varchar(50),
     level varchar(50)
 );
+
+create table if not exists teacher (
+    id bigserial NOT NULL primary key,
+    name varchar(150) not null,
+    picture_url varchar(150) not null,
+    profile text not null
+);
