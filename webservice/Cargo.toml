@@ -2,7 +2,6 @@
 name = "webservice"
 version = "0.1.0"
 edition = "2021"
-default-run = "teacher-service"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
@@ -14,6 +13,3 @@ serde = { version = "1.0.152", features = ["derive"] }
 serde_json = "1.0.91"
 sqlx = { version = "0.6.2", features = ["postgres", "runtime-actix-rustls", "chrono", "json", "macros"] }
 tokio = { version = "1.25.0", features = ["full"] }
-
-[[bin]]
-name = "teacher-service"

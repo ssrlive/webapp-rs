@@ -16,7 +16,19 @@ async fn new_db_pool(db_url: &str, max_conn: usize) -> Result<Db> {
 }
 
 async fn sql_exec(db: &Db, file: &str) -> Result<()> {
-    let content = fs::read_to_string(file).await?;
+    let content = fs::read_to_string(file).await;
+    match content {
+        Ok(content) => {
+            _sql_exec(db, &content).await?;
+        }
+        Err(e) => {
+            println!("read sql file error: {e}");
+        }
+    }
+    Ok(())
+}
+
+async fn _sql_exec(db: &Db, content: &str) -> Result<()> {
     let sqls: Vec<&str> = content.split(';').collect();
     for sql in sqls {
         if sql.trim().is_empty() {
