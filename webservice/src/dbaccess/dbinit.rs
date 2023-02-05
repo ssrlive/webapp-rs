@@ -1,22 +1,17 @@
-use crate::errors::{Result, ServiceError};
-use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
-use tokio::fs;
-
 const PG_MAX_CONN: usize = 5;
 const SQL_FILE: &str = "sql/course.sql";
 
-pub type Db = Pool<Postgres>;
+pub type Db = sqlx::Pool<sqlx::Postgres>;
 
-async fn new_db_pool(db_url: &str, max_conn: usize) -> Result<Db> {
-    PgPoolOptions::new()
+async fn new_db_pool(db_url: &str, max_conn: usize) -> sqlx::Result<Db> {
+    sqlx::postgres::PgPoolOptions::new()
         .max_connections(max_conn as u32)
         .connect(db_url)
         .await
-        .map_err(ServiceError::from)
 }
 
-async fn sql_exec(db: &Db, file: &str) -> Result<()> {
-    let content = fs::read_to_string(file).await;
+async fn sql_exec(db: &Db, file: &str) -> sqlx::Result<()> {
+    let content = std::fs::read_to_string(file);
     match content {
         Ok(content) => {
             _sql_exec(db, &content).await?;
@@ -28,7 +23,7 @@ async fn sql_exec(db: &Db, file: &str) -> Result<()> {
     Ok(())
 }
 
-async fn _sql_exec(db: &Db, content: &str) -> Result<()> {
+async fn _sql_exec(db: &Db, content: &str) -> sqlx::Result<()> {
     let sqls: Vec<&str> = content.split(';').collect();
     for sql in sqls {
         if sql.trim().is_empty() {
@@ -39,10 +34,11 @@ async fn _sql_exec(db: &Db, content: &str) -> Result<()> {
     Ok(())
 }
 
-pub async fn init_db(db_url: &str) -> Result<Db> {
+pub async fn db_initialize(db_url: &str, sql_file: Option<String>) -> sqlx::Result<Db> {
     {
         let db = new_db_pool(db_url, 1).await?;
-        sql_exec(&db, SQL_FILE).await?;
+        let sql_file = sql_file.unwrap_or_else(|| String::from(SQL_FILE));
+        sql_exec(&db, &sql_file).await?;
     }
     let db = new_db_pool(db_url, PG_MAX_CONN).await?;
     Ok(db)

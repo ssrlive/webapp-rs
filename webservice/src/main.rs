@@ -1,6 +1,6 @@
 use actix_web::{web, App, HttpServer};
 use std::io;
-use webservice::dbaccess::dbinit::init_db;
+use webservice::dbaccess::dbinit::db_initialize;
 use webservice::errors::ServiceError;
 use webservice::routes::*;
 use webservice::state::AppState;
@@ -9,8 +9,14 @@ use webservice::state::AppState;
 async fn main() -> io::Result<()> {
     dotenv::dotenv().ok();
 
+    let svc_addr = std::env::var("BACKEND_HOST_PORT").expect("BACKEND_HOST_PORT must be set");
+    let sql_file = std::env::var("SQL_FILE_PATH").ok();
+    if sql_file.is_none() {
+        println!("SQL_FILE_PATH not set, skipping database initialization");
+    }
+
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let db_pool = init_db(&db_url).await.unwrap();
+    let db_pool = db_initialize(&db_url, sql_file).await.unwrap();
 
     let state = web::Data::new(AppState::new("I'm fine", db_pool));
     let app = move || {
@@ -25,5 +31,5 @@ async fn main() -> io::Result<()> {
             .configure(teacher_routes)
     };
 
-    HttpServer::new(app).bind("127.0.0.1:3000")?.run().await
+    HttpServer::new(app).bind(&svc_addr)?.run().await
 }

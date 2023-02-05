@@ -49,14 +49,16 @@ pub async fn delete_teacher_handler(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::teacher::{CreateTeacher, Teacher};
+    use crate::{
+        dbaccess::dbinit::db_initialize,
+        models::teacher::{CreateTeacher, Teacher},
+    };
     use actix_web::{http::StatusCode, web::Data};
-    use sqlx::postgres::PgPoolOptions;
 
     async fn build_test_env() -> Data<AppState> {
         dotenv::dotenv().ok();
-        let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-        let db_pool = PgPoolOptions::new().connect(&database_url).await.unwrap();
+        let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+        let db_pool = db_initialize(&db_url, None).await.unwrap();
         let state = AppState::new("I'm healthy", db_pool);
         web::Data::new(state)
     }
