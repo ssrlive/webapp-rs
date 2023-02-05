@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TeacherRegisterForm {
     pub name: String,
-    pub imageurl: String,
+    pub picture_url: String,
     pub profile: String,
 }
 

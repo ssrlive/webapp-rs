@@ -32,7 +32,7 @@ pub async fn show_register_form(tmpl: web::Data<tera::Tera>) -> Result<HttpRespo
     let mut ctx = tera::Context::new();
     ctx.insert("error", &false);
     ctx.insert("current_name", &"");
-    ctx.insert("current_imageurl", &"");
+    ctx.insert("current_picture_url", &"");
     ctx.insert("current_profile", &"");
     let s = tmpl.render("register.html", &ctx).unwrap();
 
@@ -49,13 +49,13 @@ pub async fn handle_register(
     if form.name == "Dave" {
         ctx.insert("error", "Dave is already registered");
         ctx.insert("current_name", &form.name);
-        ctx.insert("current_imageurl", &form.imageurl);
+        ctx.insert("current_picture_url", &form.picture_url);
         ctx.insert("current_profile", &form.profile);
         s = tmpl.render("register.html", &ctx).unwrap();
     } else {
         let new_teacher = json!({
             "name": form.name,
-            "picture_url": form.imageurl,
+            "picture_url": form.picture_url,
             "profile": form.profile,
         });
         let awc_client = awc::Client::default();
